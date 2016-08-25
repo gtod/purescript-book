@@ -2,10 +2,10 @@ module FileOperations where
 
 import Prelude
 import Control.MonadZero (guard)
-import Data.Array (tail, head, concatMap, (:))
+import Data.Array (concatMap, (:))
 import Data.Foldable (foldl)
 import Data.Maybe (Maybe(Nothing, Just))
-import Data.Path (root, size, Path, ls, isDirectory)
+import Data.Path (size, Path, ls, isDirectory)
 
 allFiles :: Path -> Array Path
 allFiles root = root : concatMap allFiles (ls root)
@@ -26,21 +26,19 @@ onlyFiles path = do
   guard $ isFile file
   pure file
 
-maybeLess :: Maybe Int -> Maybe Int -> Boolean
-maybeLess (Just x) (Just y) = x < y
-maybeLess _ _ = false
+-- Ahh, THINK, only your acc needed to be Maybe...
+smallerPath :: Maybe Path -> Path -> Maybe Path
+smallerPath (Just x) y = if (size x) < (size y) then Just x else Just y
+smallerPath Nothing y = Just y
 
--- This seems sort of subtle, we need to get the pattern match with the
--- acc right, and I'm not sure I have yet...
-smallerPath :: Maybe Path -> Maybe Path -> Maybe Path
-smallerPath (Just b) (Just a) = if (maybeLess (size a) (size b)) then (Just a) else (Just b)
-smallerPath (Just b) _ = Just b
-smallerPath _ (Just a) = Just a
-smallerPath _ _ = Nothing
-
--- You gives us a path to look for the smallest file in, but there may not be
+-- You give us a path to look for the smallest file in, but there may not be
 -- one so you only get a Maybe Path back...
 smallestFile :: Path -> Maybe Path
 -- Again, it's not that we can't make runtime tests but rather that the compiler
 -- is satisfied (at compile time) that we have not introduced any type leaks...
-smallestFile path = foldl smallerPath (if isFile path then (Just path) else Nothing) (map Just (onlyFiles path))
+-- Note well, smallestFile returns a *function*, it doesn't *do anything* (yet).
+smallestFile = foldl smallerPath Nothing <<< onlyFiles
+-- contrast with:
+-- smallestFile path = foldl smallerPath Nothing (onlyFiles path)
+-- this is written by someone who still wants his functions to *do things* rather
+-- than just be pieces of a puzzle to be asembled and (finally) used elsewhere
