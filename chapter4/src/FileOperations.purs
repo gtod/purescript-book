@@ -45,9 +45,9 @@ whereIs name = foldl (\b a -> if isJust a then a else b) Nothing $ findFile root
     matchesName path = name == filename path
 
     tryMatch :: Path -> Path -> Maybe Path
-    tryMatch path parent = if (matchesName path) then Just parent else Nothing
+    tryMatch path parent = if matchesName path then Just parent else Nothing
 
     findFile :: Path -> Path -> Array (Maybe Path)
-    findFile node parent = (tryMatch node parent) : do
+    findFile node parent = tryMatch node parent : do
      path <- ls node
      findFile path node
