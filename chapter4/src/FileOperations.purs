@@ -29,7 +29,7 @@ onlyFiles path = do
 -- Ex 4.17.2a
 -- Ahh, THINK, only your acc needed to be Maybe...
 smallerPath :: Maybe Path -> Path -> Maybe Path
-smallerPath (Just x) y = if (size x) < (size y) then Just x else Just y
+smallerPath (Just x) y = Just if (size x) < (size y) then x else y
 smallerPath Nothing y = Just y
 
 smallestFile :: Path -> Maybe Path
