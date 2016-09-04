@@ -2,10 +2,10 @@ module FileOperations where
 
 import Prelude
 import Control.MonadZero (guard)
-import Data.Array (concatMap, (:))
+import Data.Array (null, concatMap, (:))
 import Data.Foldable (foldl)
 import Data.Maybe (isJust, Maybe(Nothing, Just))
-import Data.Path (isDirectory, size, Path, ls, filename, root)
+import Data.Path (filename, isDirectory, size, Path, ls, root)
 
 allFiles :: Path -> Array Path
 allFiles root = root : concatMap allFiles (ls root)
@@ -51,3 +51,21 @@ whereIs name = foldl (\b a -> if isJust a then a else b) Nothing $ findFile root
     findFile node parent = tryMatch node parent : do
      path <- ls node
      findFile path node
+
+-- Ex 4.17.3, a variant
+whereIs' :: String -> Maybe Path
+whereIs' name = foldl findFile Nothing $ dirs root where
+  findFile :: Maybe Path -> Path -> Maybe Path
+  findFile b a = if matchingFileInDir a name then Just a else b
+
+  dirs :: Path -> Array Path
+  dirs path = path : do
+    file <- ls path
+    guard $ isDirectory file
+    file : dirs file
+
+  matchingFileInDir :: Path -> String -> Boolean
+  matchingFileInDir path name = not null do
+    file <- ls path
+    guard $ filename file == name
+    pure file
